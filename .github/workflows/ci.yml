@@ -38,12 +38,12 @@ jobs:
           Copy-Item webdriver\geckodriver.exe "C:\Program Files\GeckoDriver\"
           echo "C:\Program Files\GeckoDriver" | Out-File -FilePath $env:GITHUB_PATH -Append
 
-      - name: Start PHP server and run tests
+      - name: Start local PHP server and run tests
         shell: pwsh
         run: |
-          # Mulai server PHP dengan document root di folder DamnCRUD-main
-          Start-Process php -ArgumentList '-S 127.0.0.1:8000 -t DamnCRUD-main' -NoNewWindow
-          # Tunggu beberapa detik agar server benar-benar siap
+          # Mulai server PHP dengan document root di repository root
+          Start-Process php -ArgumentList '-S 127.0.0.1:8000 -t .' -NoNewWindow
+          # Tunggu 5 detik agar server siap
           Start-Sleep -Seconds 5
-          # Jalankan tes dari folder tests dengan verbose
+          # Jalankan tes menggunakan file test_integration.py dari folder tests
           python -m pytest tests/test_integration.py -v
