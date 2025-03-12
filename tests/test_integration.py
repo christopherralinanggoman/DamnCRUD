@@ -1,3 +1,4 @@
+import sys
 import pytest
 import time
 from selenium import webdriver
@@ -14,9 +15,16 @@ def driver():
     options = Options()
     # options.headless = True  # Uncomment jika ingin menjalankan headless
 
-    service = Service(r"C:\Program Files\GeckoDriver\geckodriver.exe")
+    if sys.platform.startswith("linux"):
+        # Pada Linux, geckodriver biasanya sudah terpasang di /usr/bin/geckodriver
+        service = Service("/usr/bin/geckodriver")
+    elif sys.platform.startswith("win"):
+        # Gunakan path Windows saat dijalankan secara lokal
+        service = Service(r"C:\Program Files\GeckoDriver\geckodriver.exe")
+    else:
+        raise Exception("Platform tidak didukung!")
+
     driver = webdriver.Firefox(service=service, options=options)
-    
     driver.implicitly_wait(10)
     yield driver
     driver.quit()
