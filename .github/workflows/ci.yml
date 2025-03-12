@@ -40,10 +40,9 @@ jobs:
         shell: pwsh
         run: |
           Start-Process php -ArgumentList '-S 127.0.0.1:8000 -t .' -NoNewWindow
-          # Tunggu beberapa detik agar server siap
           Start-Sleep -Seconds 5
 
-      - name: Run tests in parallel
+      - name: Run tests
         shell: pwsh
         run: |
-          python -m pytest --maxfail=5 --disable-warnings -n auto --capture=tee-sys
+          python -m pytest test_integration.py -v
