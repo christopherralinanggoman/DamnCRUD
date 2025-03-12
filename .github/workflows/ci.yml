@@ -24,12 +24,25 @@ jobs:
           pip install -r tests/requirements.txt
 
       - name: Install GeckoDriver
+        # Pastikan shell adalah pwsh (PowerShell) agar Expand-Archive dapat digunakan
+        shell: pwsh
         run: |
+          # Unduh file ZIP geckodriver
           curl -L "https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-v0.34.0-win64.zip" -o geckodriver.zip
-          tar -xf geckodriver.zip
-          move geckodriver.exe "C:\\Program Files\\GeckoDriver\\"
-          echo "C:\\Program Files\\GeckoDriver" >> $GITHUB_PATH
+          
+          # Ekstrak ZIP ke folder geckodrivertemp
+          Expand-Archive -Path geckodriver.zip -DestinationPath geckodrivertemp
+          
+          # Buat folder tujuan (jika belum ada)
+          New-Item -ItemType Directory -Path "C:\Program Files\GeckoDriver" -Force | Out-Null
+          
+          # Pindahkan geckodriver.exe ke folder tujuan
+          Move-Item geckodrivertemp\geckodriver.exe "C:\Program Files\GeckoDriver\"
+          
+          # Tambahkan folder ke PATH untuk step-step berikutnya
+          echo "C:\Program Files\GeckoDriver" | Out-File -FilePath $env:GITHUB_PATH -Append
 
       - name: Run tests in parallel
+        shell: pwsh
         run: |
           python -m pytest --maxfail=5 --disable-warnings -n auto --capture=tee-sys
