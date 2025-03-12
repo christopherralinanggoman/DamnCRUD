@@ -39,7 +39,6 @@ jobs:
       - name: Start local PHP server
         shell: pwsh
         run: |
-          cd DamnCRUD
           php -S 127.0.0.1:8000 -t .
         # Jalankan di foreground; job ini akan berakhir jika server mati.
 
