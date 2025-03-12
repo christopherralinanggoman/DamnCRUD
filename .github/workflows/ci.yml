@@ -43,7 +43,5 @@ jobs:
         run: |
           # Mulai server PHP dengan document root di repository root
           Start-Process php -ArgumentList '-S 127.0.0.1:8000 -t .' -NoNewWindow
-          # Tunggu 5 detik agar server siap
           Start-Sleep -Seconds 5
-          # Jalankan tes menggunakan file test_integration.py dari folder tests
           python -m pytest tests/test_integration.py -v
