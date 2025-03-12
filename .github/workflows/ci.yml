@@ -1,50 +1,85 @@
-name: CI Pipeline
+name: Selenium Tests
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  test:
-    runs-on: windows-latest
+  selenium-test:
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y php php-cli php-mysql unzip google-chrome-stable mariadb-server mariadb-client curl
 
-      - name: Install PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.1'
-          extension-csv: mbstring, pdo_mysql
+    - name: Start MariaDB Service
+      run: |
+        sudo systemctl start mariadb
+        sudo systemctl enable mariadb
+        sudo systemctl restart mariadb
 
-      - name: Install dependencies from requirements.txt
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r tests/requirements.txt
+    - name: Setup Database
+      run: |
+        sudo mysql --user=root --execute="CREATE DATABASE IF NOT EXISTS damncrud;"
+        sudo mysql --user=root damncrud < db/damncrud.sql
+        sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON damncrud.* TO 'root'@'localhost' IDENTIFIED BY '';"
+        sudo mysql --user=root --execute="FLUSH PRIVILEGES;"
 
-      - name: Copy geckodriver to PATH
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path "C:\Program Files\GeckoDriver" -Force | Out-Null
-          Copy-Item webdriver\geckodriver.exe "C:\Program Files\GeckoDriver\"
-          echo "C:\Program Files\GeckoDriver" | Out-File -FilePath $env:GITHUB_PATH -Append
+    - name: Verify Database Setup
+      run: |
+        sudo mysql -u root -e "USE damncrud; SHOW TABLES;"
 
-      - name: Start local PHP server and run tests
-        shell: pwsh
-        run: |
-          # Pindah ke direktori checkout repository
-          Set-Location $env:GITHUB_WORKSPACE
-          # Mulai server PHP dengan document root repository
-          Start-Process php -ArgumentList '-S 127.0.0.1:8000 -t .' -NoNewWindow
-          # Tunggu 5 detik agar server siap menerima koneksi
-          Start-Sleep -Seconds 5
-          python -m pytest tests/test_integration.py -v
+    - name: Start PHP server
+      run: |
+        nohup php -S 127.0.0.1:8000 -t . > server.log 2>&1 &
+        sleep 5
+        echo "✅ Checking server log:"
+        cat server.log
+
+    - name: Wait for server to start
+      run: |
+        for i in {1..10}; do
+          curl -s http://127.0.0.1:8000/login.php && echo "✅ Server is up!" && exit 0
+          echo "⏳ Waiting for server..."
+          sleep 2
+        done
+        echo "❌ Server failed to start!"
+        exit 1
+
+    - name: Set Up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install selenium webdriver-manager pytest
+
+    - name: Run Selenium Tests
+      run: python -m pytest tests/test_integration.py -v
+
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: selenium-test-results
+        path: test-results/
+
+    - name: Upload Test Logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: selenium-test-logs
+        path: test-results/test_log.txt
