@@ -23,22 +23,15 @@ def driver():
 
 @pytest.mark.order(1)
 def test_login_success(driver):
-    # Akses halaman login (sesuaikan dengan path aplikasi Anda)
     driver.get("http://127.0.0.1:8000/login.php")
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "inputUsername")))
+    driver.find_element(By.ID, "inputUsername").send_keys("admin")
+    driver.find_element(By.ID, "inputPassword").send_keys("nimda666!")
+    driver.find_element(By.XPATH, "//button[@type='submit']").click()
     
-    # Isi form login berdasarkan ID
-    username_field = driver.find_element(By.ID, "inputUsername")
-    password_field = driver.find_element(By.ID, "inputPassword")
-    username_field.send_keys("admin")
-    password_field.send_keys("nimda666!")
-    
-    # Klik tombol submit
-    login_button = driver.find_element(By.XPATH, "//button[@type='submit']")
-    login_button.click()
-    
-    # Tunggu beberapa detik dan verifikasi bahwa halaman sudah berubah (sesuaikan logika verifikasi)
-    time.sleep(2)
-    assert "dashboard" in driver.current_url or "menu.php" in driver.current_url or "index.php" in driver.current_url
+    # Tunggu hingga elemen "Sign out" muncul sebagai indikasi login berhasil
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.LINK_TEXT, "Sign out")))
+    assert "Sign out" in driver.page_source
 
 @pytest.mark.order(2)
 def test_add_contact(driver):

@@ -41,7 +41,7 @@ jobs:
       - name: Start local PHP server and run tests
         shell: pwsh
         run: |
-          # Mulai server PHP dengan document root di repository root
+          # Mulai server PHP dengan document root di repository root (semua file PHP berada di root)
           Start-Process php -ArgumentList '-S 127.0.0.1:8000 -t .' -NoNewWindow
           Start-Sleep -Seconds 5
           python -m pytest tests/test_integration.py -v
