@@ -14,7 +14,7 @@ def driver():
     options = Options()
     # options.headless = True  # Uncomment jika ingin menjalankan headless
 
-    service = Service(r"D:\GeckoDriver\geckodriver.exe") 
+    service = Service(r"C:\Program Files\GeckoDriver\geckodriver.exe")
     driver = webdriver.Firefox(service=service, options=options)
     
     driver.implicitly_wait(10)
