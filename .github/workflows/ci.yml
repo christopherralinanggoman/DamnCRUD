@@ -57,6 +57,9 @@ jobs:
         echo "❌ Server failed to start!"
         exit 1
 
+    - name: Prepare test results folder
+      run: mkdir -p test-results
+
     - name: Set Up Python
       uses: actions/setup-python@v5
       with:
