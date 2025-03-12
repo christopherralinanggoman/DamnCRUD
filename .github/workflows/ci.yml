@@ -45,4 +45,4 @@ jobs:
       - name: Run tests
         shell: pwsh
         run: |
-          python -m pytest /tests/test_integration.py -v
+          python -m pytest tests/test_integration.py -v
