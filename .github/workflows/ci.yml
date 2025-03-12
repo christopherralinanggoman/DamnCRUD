@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
@@ -36,13 +38,12 @@ jobs:
           Copy-Item webdriver\geckodriver.exe "C:\Program Files\GeckoDriver\"
           echo "C:\Program Files\GeckoDriver" | Out-File -FilePath $env:GITHUB_PATH -Append
 
-      - name: Start local PHP server
+      - name: Start PHP server and run tests
         shell: pwsh
         run: |
-          Start-Process php -ArgumentList '-S 127.0.0.1:8000 -t .' -NoNewWindow
+          # Mulai server PHP dengan document root di folder DamnCRUD-main
+          Start-Process php -ArgumentList '-S 127.0.0.1:8000 -t DamnCRUD-main' -NoNewWindow
+          # Tunggu beberapa detik agar server benar-benar siap
           Start-Sleep -Seconds 5
-
-      - name: Run tests
-        shell: pwsh
-        run: |
+          # Jalankan tes dari folder tests dengan verbose
           python -m pytest tests/test_integration.py -v
