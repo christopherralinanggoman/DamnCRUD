@@ -39,8 +39,9 @@ jobs:
       - name: Start local PHP server
         shell: pwsh
         run: |
-          php -S 127.0.0.1:8000 -t .
-        # Jalankan di foreground; job ini akan berakhir jika server mati.
+          Start-Process php -ArgumentList '-S 127.0.0.1:8000 -t .' -NoNewWindow
+          # Tunggu beberapa detik agar server siap
+          Start-Sleep -Seconds 5
 
       - name: Run tests in parallel
         shell: pwsh
