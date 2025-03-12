@@ -15,15 +15,16 @@ def driver():
     options = Options()
     # options.headless = True  # Uncomment jika ingin menjalankan headless
 
+    # Deteksi platform dan atur path geckodriver
     if sys.platform.startswith("linux"):
-        # Pada Linux, geckodriver biasanya sudah terpasang di /usr/bin/geckodriver
-        service = Service("/usr/bin/geckodriver")
+        # Menggunakan path yang sesuai dengan runner GitHub Action
+        service = Service("/usr/local/bin/geckodriver")
     elif sys.platform.startswith("win"):
-        # Gunakan path Windows saat dijalankan secara lokal
+        # Path lokal Windows jika dijalankan di environment lokal
         service = Service(r"C:\Program Files\GeckoDriver\geckodriver.exe")
     else:
         raise Exception("Platform tidak didukung!")
-
+    
     driver = webdriver.Firefox(service=service, options=options)
     driver.implicitly_wait(10)
     yield driver
