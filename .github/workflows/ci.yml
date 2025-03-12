@@ -23,6 +23,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r tests/requirements.txt
 
+      - name: Install GeckoDriver
+        run: |
+          curl -L "https://github.com/mozilla/geckodriver/releases/latest/download/geckodriver-v0.34.0-win64.zip" -o geckodriver.zip
+          tar -xf geckodriver.zip
+          move geckodriver.exe "C:\\Program Files\\GeckoDriver\\"
+          echo "C:\\Program Files\\GeckoDriver" >> $GITHUB_PATH
+
       - name: Run tests in parallel
         run: |
-          python -m pytest --maxfail=1 --disable-warnings -n auto
+          python -m pytest --maxfail=5 --disable-warnings -n auto --capture=tee-sys
