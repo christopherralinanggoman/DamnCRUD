@@ -24,7 +24,7 @@ def driver():
 @pytest.mark.order(1)
 def test_login_success(driver):
     # Akses halaman login (sesuaikan dengan path aplikasi Anda)
-    driver.get("http://localhost/DamnCRUD-main/login.php")
+    driver.get("http://127.0.0.1:8000/login.php")
     
     # Isi form login berdasarkan ID
     username_field = driver.find_element(By.ID, "inputUsername")
@@ -43,7 +43,7 @@ def test_login_success(driver):
 @pytest.mark.order(2)
 def test_add_contact(driver):
     # Login first
-    driver.get("http://localhost/DamnCRUD-main/login.php")
+    driver.get("http://127.0.0.1:8000/login.php")
     driver.find_element(By.ID, "inputUsername").send_keys("admin")
     driver.find_element(By.ID, "inputPassword").send_keys("nimda666!")
     driver.find_element(By.XPATH, "//button[@type='submit']").click()
@@ -79,14 +79,14 @@ def test_add_contact(driver):
 @pytest.mark.order(3)
 def test_update_contact(driver):
     # Login terlebih dahulu
-    driver.get("http://localhost/DamnCRUD-main/login.php")
+    driver.get("http://127.0.0.1:8000/login.php")
     driver.find_element(By.ID, "inputUsername").send_keys("admin")
     driver.find_element(By.ID, "inputPassword").send_keys("nimda666!")
     driver.find_element(By.XPATH, "//button[@type='submit']").click()
     time.sleep(2)
     
     # Akses halaman index, lalu klik tombol "edit" untuk kontak yang ingin diubah
-    driver.get("http://localhost/DamnCRUD-main/index.php")
+    driver.get("http://127.0.0.1:8000/index.php")
     edit_button = driver.find_element(By.LINK_TEXT, "edit")
     edit_button.click()
     
@@ -101,21 +101,21 @@ def test_update_contact(driver):
     
     # Verifikasi bahwa data sudah diperbarui di halaman index
     time.sleep(2)
-    driver.get("http://localhost/DamnCRUD-main/index.php")
+    driver.get("http://127.0.0.1:8000/index.php")
     body_text = driver.find_element(By.TAG_NAME, "body").text
     assert "Selenium Test Updated" in body_text
 
 @pytest.mark.order(4)
 def test_delete_contact(driver):
     # Login terlebih dahulu
-    driver.get("http://localhost/DamnCRUD-main/login.php")
+    driver.get("http://127.0.0.1:8000/login.php")
     driver.find_element(By.ID, "inputUsername").send_keys("admin")
     driver.find_element(By.ID, "inputPassword").send_keys("nimda666!")
     driver.find_element(By.XPATH, "//button[@type='submit']").click()
     time.sleep(2)
     
     # Akses halaman index, lalu klik tombol "delete" untuk menghapus kontak
-    driver.get("http://localhost/DamnCRUD-main/index.php")
+    driver.get("http://127.0.0.1:8000/index.php")
     delete_button = driver.find_element(By.LINK_TEXT, "delete")
     delete_button.click()
     
@@ -125,21 +125,21 @@ def test_delete_contact(driver):
     
     # Verifikasi bahwa kontak tidak lagi muncul di daftar
     time.sleep(2)
-    driver.get("http://localhost/DamnCRUD-main/index.php")
+    driver.get("http://127.0.0.1:8000/index.php")
     body_text = driver.find_element(By.TAG_NAME, "body").text
     assert "Selenium Test Updated" not in body_text
 
 @pytest.mark.order(5)
 def test_logout(driver):
     # Login terlebih dahulu
-    driver.get("http://localhost/DamnCRUD-main/login.php")
+    driver.get("http://127.0.0.1:8000/login.php")
     driver.find_element(By.ID, "inputUsername").send_keys("admin")
     driver.find_element(By.ID, "inputPassword").send_keys("nimda666!")
     driver.find_element(By.XPATH, "//button[@type='submit']").click()
     time.sleep(2)
     
     # Akses halaman index, lalu klik tombol "Sign out"
-    driver.get("http://localhost/DamnCRUD-main/index.php")
+    driver.get("http://127.0.0.1:8000/index.php")
     signout_button = driver.find_element(By.LINK_TEXT, "Sign out")
     signout_button.click()
     time.sleep(2)
