@@ -13,83 +13,81 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Install system dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y php php-cli php-mysql unzip google-chrome-stable mariadb-server mariadb-client curl
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y php php-cli php-mysql unzip google-chrome-stable mariadb-server mariadb-client curl
 
-    - name: Install geckodriver manually
-      run: |
-        wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz
-        tar -xvzf geckodriver-v0.24.0-linux64.tar.gz
-        chmod +x geckodriver
-        sudo mv geckodriver /usr/local/bin/
+      - name: Start MariaDB Service
+        run: |
+          sudo systemctl start mariadb
+          sudo systemctl enable mariadb
+          sudo systemctl restart mariadb
 
-    - name: Start MariaDB Service
-      run: |
-        sudo systemctl start mariadb
-        sudo systemctl enable mariadb
-        sudo systemctl restart mariadb
+      - name: Setup Database
+        run: |
+          sudo mysql --user=root --execute="CREATE DATABASE IF NOT EXISTS damncrud;"
+          sudo mysql --user=root damncrud < db/damncrud.sql
+          sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON damncrud.* TO 'root'@'localhost' IDENTIFIED BY '';"
+          sudo mysql --user=root --execute="FLUSH PRIVILEGES;"
 
-    - name: Setup Database
-      run: |
-        sudo mysql --user=root --execute="CREATE DATABASE IF NOT EXISTS damncrud;"
-        sudo mysql --user=root damncrud < db/damncrud.sql
-        sudo mysql --user=root --execute="GRANT ALL PRIVILEGES ON damncrud.* TO 'root'@'localhost' IDENTIFIED BY '';"
-        sudo mysql --user=root --execute="FLUSH PRIVILEGES;"
+      - name: Verify Database Setup
+        run: |
+          sudo mysql -u root -e "USE damncrud; SHOW TABLES;"
 
-    - name: Verify Database Setup
-      run: |
-        sudo mysql -u root -e "USE damncrud; SHOW TABLES;"
+      - name: Copy geckodriver to PATH
+        run: |
+          chmod +x webdriver/geckodriver
+          sudo cp webdriver/geckodriver /usr/local/bin/
 
-    - name: Start PHP server
-      run: |
-        nohup php -S 127.0.0.1:8000 -t . > server.log 2>&1 &
-        sleep 5
-        echo "✅ Checking server log:"
-        cat server.log
+      - name: Start PHP server
+        run: |
+          nohup php -S 127.0.0.1:8000 -t . > server.log 2>&1 &
+          sleep 5
+          echo "✅ Checking server log:"
+          cat server.log
 
-    - name: Wait for server to start
-      run: |
-        for i in {1..10}; do
-          curl -s http://127.0.0.1:8000/login.php && echo "✅ Server is up!" && exit 0
-          echo "⏳ Waiting for server..."
-          sleep 2
-        done
-        echo "❌ Server failed to start!"
-        exit 1
+      - name: Wait for server to start
+        run: |
+          for i in {1..10}; do
+            curl -s http://127.0.0.1:8000/login.php && echo "✅ Server is up!" && exit 0
+            echo "⏳ Waiting for server..."
+            sleep 2
+          done
+          echo "❌ Server failed to start!"
+          exit 1
 
-    - name: Prepare test results folder
-      run: mkdir -p test-results
+      - name: Prepare test results folder
+        run: mkdir -p test-results
 
-    - name: Set Up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Install Python Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install selenium webdriver-manager pytest
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium webdriver-manager pytest
 
-    - name: Run Selenium Tests
-      run: python -m pytest tests/test_integration.py -v
+      - name: Run Selenium Tests
+        run: python -m pytest tests/test_integration.py -v
 
-    - name: Upload Test Results
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: selenium-test-results
-        path: test-results/
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-test-results
+          path: test-results/
 
-    - name: Upload Test Logs
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: selenium-test-logs
-        path: test-results/test_log.txt
+      - name: Upload Test Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-test-logs
+          path: test-results/test_log.txt
